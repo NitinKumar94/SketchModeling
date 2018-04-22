@@ -67,15 +67,21 @@ def load_data(config, views, shape_list, shuffle=True, batch_size=-1):
     dnfs_interfix_list = ['/dnfs-%d' % config.image_size for view in range(num_dnfs_views)]
     dnfs_suffix_list = ['-%d.png' % view for view in range(num_dnfs_views)]
 
-    num_dn_views = 12
-    dn_prefix_list = ['dn/' for view in range(num_dn_views)]
-    dn_interfix_list = ['/dn-%d' % config.image_size for view in range(num_dn_views)]
-    dn_suffix_list = ['-%d.png' % view for view in range(num_dn_views)]
+    # num_dn_views = 12
+    # dn_prefix_list = ['dn/' for view in range(num_dn_views)]
+    # dn_interfix_list = ['/dn-%d' % config.image_size for view in range(num_dn_views)]
+    # dn_suffix_list = ['-%d.png' % view for view in range(num_dn_views)]
 
-    num_target_views = num_dnfs_views + num_dn_views
-    target_prefix_list = dnfs_prefix_list + dn_prefix_list
-    target_interfix_list = dnfs_interfix_list + dn_interfix_list
-    target_suffix_list = dnfs_suffix_list + dn_suffix_list
+    # num_target_views = num_dnfs_views + num_dn_views
+    # target_prefix_list = dnfs_prefix_list + dn_prefix_list
+    # target_interfix_list = dnfs_interfix_list + dn_interfix_list
+    # target_suffix_list = dnfs_suffix_list + dn_suffix_list
+    # num_target_views = views.num_views
+
+    num_target_views = num_dnfs_views
+    target_prefix_list = dnfs_prefix_list
+    target_interfix_list = dnfs_interfix_list
+    target_suffix_list = dnfs_suffix_list
     num_target_views = views.num_views
 
     # build input queue

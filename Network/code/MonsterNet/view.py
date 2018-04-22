@@ -23,7 +23,7 @@ import numpy as np
 
 
 class Views(object):
-    def __init__(self, filename, num_views=-1):
+    def __init__(self, filename, num_views=2):
         """
             self.views:   V x 3
             self.groups   G x v
