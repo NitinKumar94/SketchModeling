@@ -129,6 +129,7 @@ class MonNet(object):
                     disc_data = tf.concat([targets, preds], 0)
                     disc_data = tf.concat([tf.concat([sources_expanded, sources_expanded], 0), disc_data],
                                           3)  # HACK: insert input data for discrimination in UNet
+                    print("Shape of disc data: ", disc_data.shape)
                     probs = network.discriminate(disc_data)  # (n*m*2)
 
         # losses

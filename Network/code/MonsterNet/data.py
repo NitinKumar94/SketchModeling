@@ -51,7 +51,7 @@ def load_data(config, views, shape_list, shuffle=True, batch_size=-1):
 
     # handle affix
 
-    num_source_views = len(config.sketch_views)
+    num_source_views = len(config.sketch_views)  # = 2
     source_prefix_list = ['sketch/' for view in range(num_source_views)]
     source_interfix_list = ['/sketch-%c' % v for v in config.sketch_views]
     if config.test:
@@ -176,11 +176,12 @@ def load_data(config, views, shape_list, shuffle=True, batch_size=-1):
     angle_batch = batch_data[4]
     angle_batch = tf.reshape(angle_batch, [-1] + angle_batch.get_shape().as_list()[2:])
 
-    # print('name: ', name_batch)
-    # print('source: ', source_batch)
-    # print('target: ', target_batch)
-    # print('mask: ', mask_batch)
-    # print('angle: ', angle_batch)
+    # Printing diagnostic info
+    print('name: ', name_batch)
+    print('source: ', source_batch)
+    print('target: ', target_batch)
+    print('mask: ', mask_batch)
+    print('angle: ', angle_batch)
 
     return name_batch, source_batch, target_batch, mask_batch, angle_batch, num_shapes
 
