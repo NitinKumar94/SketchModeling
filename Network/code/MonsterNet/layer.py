@@ -115,9 +115,42 @@ def unconv_layer(inputs, num_outputs, kernel_size, stride, scope, normalizer_fn=
 
     # upsampled = tf.image.resize_bilinear(inputs, [h*stride, w*stride])
     upsampled = tf.image.resize_nearest_neighbor(inputs, [h * stride, w * stride])
-
+    # print("upsampled:", upsampled.get_shape())
     outputs = tf_layers.conv2d(upsampled, num_outputs=num_outputs, kernel_size=kernel_size, stride=1, scope=scope,
                                normalizer_fn=normalizer_fn, activation_fn=activation_fn)
+
+    # features = tf_layers.conv2d(upsampled, num_outputs=c, kernel_size=kernel_size, stride=1, scope=scope+'/conv1')
+    # outputs = tf_layers.conv2d(features, num_outputs=num_outputs, kernel_size=kernel_size, stride=1, scope=scope+'/conv2', normalizer_fn=normalizer_fn, activation_fn=activation_fn)
+
+    return outputs
+
+
+# Unconv for dilated decoder
+def unconv_layer(inputs, num_outputs, kernel_size, stride, scope, normalizer_fn=tf_layers.batch_norm,
+                 activation_fn=tf.nn.relu,rate=1):
+    """
+        input:
+            inputs            : n x H x W x C    feature maps to be passed into unconv layer
+            num_outputs       : scalar           number of channels in output feature map
+            kernel_size       : scalar           internal filter kernel size
+            scope             : string           scope name
+            normalizer_fn     : function         normalizer function
+            activation_fn     : function         activation function
+        output:
+            outputs           : n x H x W x C    output feature maps
+    """
+
+    # return tf_layers.conv2d_transpose(inputs, num_outputs=num_outputs, kernel_size=kernel_size, stride=stride, scope=scope, normalizer_fn=normalizer_fn, activation_fn=activation_fn)
+
+    h = inputs.get_shape()[1].value
+    w = inputs.get_shape()[2].value
+    c = inputs.get_shape()[3].value
+
+    # upsampled = tf.image.resize_bilinear(inputs, [h*stride, w*stride])
+    upsampled = tf.image.resize_nearest_neighbor(inputs, [h * stride, w * stride])
+    # print("upsampled:", upsampled.get_shape())
+    outputs = tf_layers.conv2d(upsampled, num_outputs=num_outputs, kernel_size=kernel_size, stride=1, scope=scope,
+                               normalizer_fn=normalizer_fn, activation_fn=activation_fn,rate=rate)
 
     # features = tf_layers.conv2d(upsampled, num_outputs=c, kernel_size=kernel_size, stride=1, scope=scope+'/conv1')
     # outputs = tf_layers.conv2d(features, num_outputs=num_outputs, kernel_size=kernel_size, stride=1, scope=scope+'/conv2', normalizer_fn=normalizer_fn, activation_fn=activation_fn)

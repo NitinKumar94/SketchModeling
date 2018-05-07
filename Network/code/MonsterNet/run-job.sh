@@ -10,7 +10,7 @@
 #SBATCH --mail-user=anubhavsingh@umass.edu
 
 # Log the jobid.
-echo $SLURM_JOBID - `hostname` >> ~/slurm-jobs.txt
+#echo $SLURM_JOBID - `hostname` >> ~/slurm-jobs.txt
 
 # Run command
-python main.py --train --data_dir "/home/anubhavsingh/690IV/Project/TrainingData/Airplane/" --train_dir "/home/anubhavsingh/690IV/Project/CheckpointTesting/Airplane/"
+python main.py --train --data_dir "/home/anubhavsingh/690IV/Project/TrainingData/Airplane/" --train_dir "/home/anubhavsingh/690IV/Project/CheckpointTesting/Airplane/" --max_epochs 1 --gpu_fraction 0.7

@@ -40,14 +40,19 @@ def generateUNet(images, num_output_views, num_output_channels):
 
     ###### encoding ######
 
-    # e1 = tf_layers.conv2d(images, num_outputs=64, kernel_size=4, stride=1, scope='e1',
-    #                       normalizer_fn=None, rate = (1,2))  # 128 x 128 x  64
-    # e2 = tf_layers.conv2d(e1, num_outputs=128, kernel_size=4, stride=1, scope='e2',rate = (1,2))  # 64 x  64 x 128
-    # e3 = tf_layers.conv2d(e2, num_outputs=256, kernel_size=4, stride=1, scope='e3',rate = (1,2))  # 32 x  32 x 256
-    # e4 = tf_layers.conv2d(e3, num_outputs=512, kernel_size=4, stride=1, scope='e4',rate = (1,2))  # 16 x  16 x 512
-    # e5 = tf_layers.conv2d(e4, num_outputs=512, kernel_size=4, stride=1, scope='e5',rate = (1,2))  # 8 x   8 x 512
-    # e6 = tf_layers.conv2d(e5, num_outputs=512, kernel_size=4, stride=1, scope='e6',rate = (1,2))  # 4 x   4 x 512
-    # e7 = tf_layers.conv2d(e6, num_outputs=512, kernel_size=4, stride=1, scope='e7',rate = (1,2))  # 2 x   2 x 512
+    #### Encoding Without Dilations ####
+
+    # e1 = tf_layers.conv2d(images, num_outputs=64, kernel_size=4, stride=2, scope='e1',
+    #                       normalizer_fn=None)  # 128 x 128 x  64
+    # e2 = tf_layers.conv2d(e1, num_outputs=128, kernel_size=4, stride=2, scope='e2')  # 64 x  64 x 128
+    # e3 = tf_layers.conv2d(e2, num_outputs=256, kernel_size=4, stride=2, scope='e3')  # 32 x  32 x 256
+    # e4 = tf_layers.conv2d(e3, num_outputs=512, kernel_size=4, stride=2, scope='e4')  # 16 x  16 x 512
+    # e5 = tf_layers.conv2d(e4, num_outputs=512, kernel_size=4, stride=2, scope='e5')  # 8 x   8 x 512
+    # e6 = tf_layers.conv2d(e5, num_outputs=512, kernel_size=4, stride=2, scope='e6')  # 4 x   4 x 512
+    # e7 = tf_layers.conv2d(e6, num_outputs=512, kernel_size=4, stride=2, scope='e7')  # 2 x   2 x 512
+
+    #### Dilated Encoder #####
+
     paddings = tf.constant([[0, 0, ],[1, 0, ], [1, 0,],[0, 0 ]])
     images_padded = tf.pad(images, paddings, "CONSTANT")
     e1 = tf_layers.conv2d(images_padded, num_outputs=64, kernel_size=4, stride=(1,1), scope='e1',
@@ -84,26 +89,30 @@ def generateUNet(images, num_output_views, num_output_channels):
         # print (view)
         with tf.variable_scope('decoder_%d' % view):
 
-            d6 = tf_layers.dropout(
-                layer.unconv_layer(e7, num_outputs=512, kernel_size=4, stride=2, scope='d6'))  # 4 x   4 x 512
+            ### Decoding Without Dilations ###
+
+            # d6 = tf_layers.dropout(layer.unconv_layer(e7, num_outputs=512, kernel_size=4, stride=2, scope='d6'))  # 4 x   4 x 512
+            # d5 = tf_layers.dropout(layer.unconv_layer(tf.concat([d6, e6], 3), num_outputs=512, kernel_size=4, stride=2,scope='d5'))  # 8 x   8 x 512
+            # d4 = layer.unconv_layer(tf.concat([d5, e5], 3), num_outputs=512, kernel_size=4, stride=2,scope='d4')  # 16 x  16 x 512
+            # d3 = layer.unconv_layer(tf.concat([d4, e4], 3), num_outputs=256, kernel_size=4, stride=2,scope='d3')  # 32 x  32 x 256
+            # d2 = layer.unconv_layer(tf.concat([d3, e3], 3), num_outputs=128, kernel_size=4, stride=2,scope='d2')  # 64 x  64 x 128
+            # d1 = layer.unconv_layer(tf.concat([d2, e2], 3), num_outputs=64, kernel_size=4, stride=2,scope='d1')  # 128 x 128 x  64
+            # rpv[view] = layer.unconv_layer(tf.concat([d1, e1], 3), num_outputs=nc, kernel_size=4, stride=2, scope='re',normalizer_fn=None, activation_fn=tf.tanh)
+
+            ### Dilated Decoder ###
+            d6 = tf_layers.dropout(layer.unconv_layer(e7, num_outputs=512, kernel_size=4, stride=2, scope='d6',rate=2))  # 4 x   4 x 512
             # print("d6:", d6.get_shape())
-            d5 = tf_layers.dropout(layer.unconv_layer(tf.concat([d6, e6], 3), num_outputs=512, kernel_size=4, stride=2,
-                                                      scope='d5'))  # 8 x   8 x 512
+            d5 = tf_layers.dropout(layer.unconv_layer(tf.concat([d6, e6], 3), num_outputs=512, kernel_size=4, stride=2,scope='d5',rate=3))  # 8 x   8 x 512
             # print("d5:", d6.get_shape())
-            d4 = layer.unconv_layer(tf.concat([d5, e5], 3), num_outputs=512, kernel_size=4, stride=2,
-                                    scope='d4')  # 16 x  16 x 512
+            d4 = layer.unconv_layer(tf.concat([d5, e5], 3), num_outputs=512, kernel_size=4, stride=2,scope='d4',rate=6)  # 16 x  16 x 512
             # print("d4:", d6.get_shape())
-            d3 = layer.unconv_layer(tf.concat([d4, e4], 3), num_outputs=256, kernel_size=4, stride=2,
-                                    scope='d3')  # 32 x  32 x 256
+            d3 = layer.unconv_layer(tf.concat([d4, e4], 3), num_outputs=256, kernel_size=4, stride=2,scope='d3',rate=11)  # 32 x  32 x 256
             # print("d3:", d6.get_shape())
-            d2 = layer.unconv_layer(tf.concat([d3, e3], 3), num_outputs=128, kernel_size=4, stride=2,
-                                    scope='d2')  # 64 x  64 x 128
+            d2 = layer.unconv_layer(tf.concat([d3, e3], 3), num_outputs=128, kernel_size=4, stride=2,scope='d2',rate=22)  # 64 x  64 x 128
             # print("d2:", d6.get_shape())
-            d1 = layer.unconv_layer(tf.concat([d2, e2], 3), num_outputs=64, kernel_size=4, stride=2,
-                                    scope='d1')  # 128 x 128 x  64
+            d1 = layer.unconv_layer(tf.concat([d2, e2], 3), num_outputs=64, kernel_size=4, stride=2,scope='d1',rate=43)  # 128 x 128 x  64
             # print("d1:", d6.get_shape())
-            rpv[view] = layer.unconv_layer(tf.concat([d1, e1], 3), num_outputs=nc, kernel_size=4, stride=2, scope='re',
-                                           normalizer_fn=None, activation_fn=tf.tanh)
+            rpv[view] = layer.unconv_layer(tf.concat([d1, e1], 3), num_outputs=nc, kernel_size=4, stride=2, scope='re',normalizer_fn=None, activation_fn=tf.tanh)
             # print("rpv[view]:", rpv[view].get_shape())
     height = images.get_shape()[1].value
     width = images.get_shape()[2].value
